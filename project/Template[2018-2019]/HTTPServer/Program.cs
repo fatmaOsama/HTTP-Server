@@ -25,7 +25,7 @@ namespace HTTPServer
             // each line in the file specify a redirection rule
             // example: "aboutus.html,aboutus2.html"
             // means that when making request to aboustus.html,, it redirects me to aboutus2
-            if (!File.Exists("RedirectDictionary.txt"))
+            if (!File.Exists(Configuration.RedirectDictionarytFilePath))
             {
                 TextWriter tw = new StreamWriter(Configuration.RedirectDictionarytFilePath, true);
                 tw.WriteLine("aboutus.html,aboutus2.html");

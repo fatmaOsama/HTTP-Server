@@ -36,7 +36,7 @@ namespace HTTPServer
                 NewThread.Start(clientSocket);
             }
             //To keep the app alive until all threads have finished.
-            //Console.ReadLine();
+            Console.ReadLine();
 
         }
 
@@ -68,7 +68,9 @@ namespace HTTPServer
                     // TODO: Call HandleRequest Method that returns the response
                     Response NewResponse = HandleRequest(NewRequest);
                     // TODO: Send Response back to client
-
+                    byte[] ToSend = new byte[100000000];
+                    ToSend = Encoding.ASCII.GetBytes(NewResponse.ResponseString);
+                    clientSock.Send(data);
                 }
                 catch (Exception ex)
                 {
@@ -77,14 +79,15 @@ namespace HTTPServer
                 }
             }
 
-         
         }
 
         Response HandleRequest(Request request )
         {
             
-            string content;
+            string content=""; //da el content bt3t el retrived file ! 
             StatusCode status=StatusCode.OK;
+            string NewURI = string.Empty;
+            
             try
             {
                 //TODO: check for bad request 
@@ -92,39 +95,55 @@ namespace HTTPServer
                 {
                     status = StatusCode.BadRequest;
                 }
-                //TODO: map the relativeURI in request to get the physical path of the resource.
-                string Path = Configuration.RootPath + request.relativeURI;
                 //TODO: check for redirect
-                LoadRedirectionRules(Configuration.RedirectDictionarytFilePath);
-                if (Configuration.RedirectionRules.ContainsKey(request.relativeURI)) //KEY NEEDS TO CHANGE ! 
+                 NewURI=GetRedirectionPagePathIFExist(request.relativeURI);
+                if (!(NewURI == string.Empty))
                 {
-                    status = StatusCode.Redirect;
-                    request.relativeURI = Configuration.RedirectionRules[request.relativeURI]; //Also needs to change
+                    request.relativeURI = NewURI;
+                    content = GetRedirectionPagePathIFExist(request.relativeURI);
                 }
+                //TODO: map the relativeURI in request to get the physical path of the resource.
+                //Nee
+                string PhysicalPath = Configuration.RootPath + request.relativeURI;
+
                 //TODO: check file exists
-                if (File.Exists(Path))
+                if (File.Exists(PhysicalPath))
                 {
                     // Create OK response
                     status = StatusCode.OK;
+                    //TODO: read the physical file
+                    content = File.ReadAllText(PhysicalPath, Encoding.UTF8);
                 }
-                //TODO: read the physical file
+                else
+                {
+                    status = StatusCode.NotFound;
+                }
+                if (NewURI != string.Empty)
+                {
+                    status = StatusCode.Redirect;
+                }
 
             }
             catch (Exception ex)
             {
                 // TODO: log exception using Logger class
                 // TODO: in case of exception, return Internal Server Error. 
+                status = StatusCode.InternalServerError;
                 Logger.LogException(ex);
             }
-            Response response = new Response(request.httpVersion, status, "", "", "");
+            Response response = new Response(status,"text/html", content,NewURI);
             return response;
         }
 
         private string GetRedirectionPagePathIFExist(string relativePath)
         {
+            string Result = string.Empty;
             // using Configuration.RedirectionRules return the redirected page path if exists else returns empty
-            
-            return string.Empty;
+            if (Configuration.RedirectionRules.ContainsKey(relativePath)) //KEY NEEDS TO CHANGE ! 
+            {
+               Result = Configuration.RedirectionRules[relativePath]; //Also needs to change
+            }
+            return Result;
         }
 
         private string LoadDefaultPage(string defaultPageName)
@@ -140,6 +159,7 @@ namespace HTTPServer
         {
             try
             {
+                Configuration.RedirectionRules = new Dictionary<string, string>();
                 // TODO: using the filepath paramter read the redirection rules from file 
                 // then fill Configuration.RedirectionRules dictionary 
                 string[] Lines = File.ReadAllLines(filePath, Encoding.UTF8);

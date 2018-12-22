@@ -32,13 +32,14 @@ namespace HTTPServer
             get { return headerLines; }
         }
 
-        HTTPVersion httpVersion;
+        public HTTPVersion httpVersion;
         string requestString;
-        string[] contentLines;
+        public string[] contentLines;
 
         public Request(string requestString)
         {
             this.requestString = requestString;
+            
             headerLines = new Dictionary<string, string>();
         }
         /// <summary>
@@ -128,7 +129,9 @@ namespace HTTPServer
             {
                 return false;
             }
+            //Load Content Lines
             i++;
+            contentLines = new string[Lines.Count()-i];
             int j = 0;
             for (; i < Lines.Count(); i++)
             {
