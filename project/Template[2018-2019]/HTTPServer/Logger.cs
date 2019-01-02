@@ -16,5 +16,11 @@ namespace HTTPServer
             tw.WriteLine(ex.Message+" "+DateTime.Now);
             tw.Close();
         }
+        public static void Log(string ex)
+        {
+            TextWriter tw = new StreamWriter(Configuration.LoggerFilePath, true);
+            tw.WriteLine(ex + " " + DateTime.Now);
+            tw.Close();
+        }
     }
 }

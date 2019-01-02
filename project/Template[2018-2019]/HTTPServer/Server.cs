@@ -59,6 +59,7 @@ namespace HTTPServer
                     if (receivedLength == 0)
                     {
                         // TODO: close client socket
+                       // clientSock.Shutdown(SocketShutdown.Both);
                         clientSock.Close();
                         break;
                     }
@@ -70,7 +71,7 @@ namespace HTTPServer
                     // TODO: Send Response back to client
                     byte[] ToSend = new byte[100000000];
                     ToSend = Encoding.ASCII.GetBytes(NewResponse.ResponseString);
-                    clientSock.Send(data);
+                    clientSock.Send(ToSend);
                 }
                 catch (Exception ex)
                 {
@@ -94,13 +95,14 @@ namespace HTTPServer
                 if (!request.ParseRequest())
                 {
                     status = StatusCode.BadRequest;
+                    content = LoadDefaultPage("BadRequest.html");
                 }
                 //TODO: check for redirect
                  NewURI=GetRedirectionPagePathIFExist(request.relativeURI);
-                if (!(NewURI == string.Empty))
+                if (NewURI != string.Empty)
                 {
-                    request.relativeURI = NewURI;
-                    content = GetRedirectionPagePathIFExist(request.relativeURI);
+                   request.relativeURI = NewURI;
+                   //content= LoadDefaultPage("Redirect.html");
                 }
                 //TODO: map the relativeURI in request to get the physical path of the resource.
                 //Nee
@@ -117,10 +119,12 @@ namespace HTTPServer
                 else
                 {
                     status = StatusCode.NotFound;
+                    content = LoadDefaultPage("NotFound.html");
                 }
                 if (NewURI != string.Empty)
                 {
                     status = StatusCode.Redirect;
+                    //content = content = LoadDefaultPage("Redirect.html");
                 }
 
             }
@@ -129,6 +133,7 @@ namespace HTTPServer
                 // TODO: log exception using Logger class
                 // TODO: in case of exception, return Internal Server Error. 
                 status = StatusCode.InternalServerError;
+                content = content = LoadDefaultPage("InternalError.html");
                 Logger.LogException(ex);
             }
             Response response = new Response(status,"text/html", content,NewURI);
@@ -150,7 +155,14 @@ namespace HTTPServer
         {
             string filePath = Path.Combine(Configuration.RootPath, defaultPageName);
             // TODO: check if filepath not exist log exception using Logger class and return empty string
-            
+            if (File.Exists(filePath))
+            {
+                return File.ReadAllText(filePath, Encoding.UTF8);
+            }
+            else
+            {
+                Logger.Log("Default page wasn't found");
+            }
             // else read file and return its content
             return string.Empty;
         }

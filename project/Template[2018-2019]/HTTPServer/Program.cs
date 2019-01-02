@@ -28,7 +28,8 @@ namespace HTTPServer
             if (!File.Exists(Configuration.RedirectDictionarytFilePath))
             {
                 TextWriter tw = new StreamWriter(Configuration.RedirectDictionarytFilePath, true);
-                tw.WriteLine("aboutus.html,aboutus2.html");
+                tw.WriteLine("/aboutus.html,/aboutus2.html");
+                //tw.WriteLine("/redict.html,/aboutus2.html");
                 tw.Close();
             }
         }

@@ -37,12 +37,13 @@ namespace HTTPServer
             responseString += StatusLine+"\r\n";
             responseString += "Content-Type: " + contentType + "\r\n";
             responseString += "Content-Length: "+ content.Length + "\r\n";
-            responseString += "Date: " + DateTime.Now + "\r\n";
+            responseString += "Date: " + DateTime.Now.ToString("F") + "\r\n";
+            responseString += "Server: " +Configuration.ServerType + "\r\n";
             if (redirectoinPath != "")
             {
                 responseString += "Redirected-To: " + redirectoinPath + "\r\n";
             }
-            responseString += "";
+            responseString += "\r\n";
             responseString += content;
 
 

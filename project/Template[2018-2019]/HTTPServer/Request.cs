@@ -125,7 +125,7 @@ namespace HTTPServer
                 }
             }
             // Validate blank line exists
-            if (i == Lines.Count())
+            if (i == Lines.Count() && Lines[i]!="\r\n")
             {
                 return false;
             }
